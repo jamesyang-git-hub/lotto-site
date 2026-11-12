@@ -1,0 +1,612 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大乐透历史开奖查询</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.544.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <style>
+        .ball {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            margin: 0 5px;
+            animation: bounce 0.6s ease-out;
+        }
+        .red-ball {
+            background-color: #4485F5;
+            box-shadow: 0 4px 8px rgba(68, 133, 245, 0.3);
+        }
+        .blue-ball {
+            background-color: #FFCD00;
+            color: #333;
+            box-shadow: 0 4px 8px rgba(255, 205, 0, 0.3);
+        }
+        @keyframes bounce {
+            0% { transform: translateY(-20px) scale(0.8); opacity: 0; }
+            50% { transform: translateY(10px) scale(1.1); }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .search-input {
+            transition: all 0.3s ease;
+        }
+        .search-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .table-row {
+            transition: all 0.3s ease;
+        }
+        .table-row:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+            transform: translateX(5px);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 min-h-screen text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-12">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="logo.png" alt="中国体育彩票" class="w-[210px] h-[70px] mr-4">
+                    <div>
+                        <h1 class="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500">
+                            大乐透历史开奖查询
+                        </h1>
+                        <p class="text-lg text-gray-300">提供2007年至今全部开奖号码</p>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-300">版本号：v1.0.31</div>
+            </div>
+        </header>
+
+        <!-- Search and Stats -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row gap-4 mb-8">
+                <div class="flex-1">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="输入期号或日期搜索..." class="search-input w-full p-4 pl-12 rounded-xl bg-white/10 border border-white/20 focus:border-blue-400 outline-none">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <button id="moreDataBtn" class="px-6 py-4 bg-purple-600 hover:bg-purple-700 rounded-xl transition-all flex items-center gap-2">
+                        <i data-lucide="database"></i>
+                        更多数据
+                    </button>
+
+                    <button id="frequencyBtn" onclick="window.location.href='frequency.html'" class="px-6 py-4 bg-orange-600 hover:bg-orange-700 rounded-xl transition-all flex items-center gap-2">
+                        <i data-lucide="bar-chart-3"></i>
+                        号码频率
+                    </button>
+                    <button onclick="window.location.href='follow-number.html'" class="px-6 py-4 bg-green-600 hover:bg-green-700 rounded-xl transition-all flex items-center gap-2">
+                        <i data-lucide="search"></i>
+                        跟随号查询
+                    </button>
+
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="relative">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 px-6 py-2 rounded-full text-white font-medium shadow-lg z-10">
+                        当前奖池
+                    </div>
+                    <div class="stat-card rounded-2xl p-6 text-center pt-8 pb-6">
+                        <div class="text-4xl font-bold text-blue-400 mb-2 mt-3" id="currentPool">¥8.3亿</div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-600 px-6 py-2 rounded-full text-white font-medium shadow-lg z-10">
+                        最后开奖
+                    </div>
+                    <div class="stat-card rounded-2xl p-6 text-center pt-8 pb-6">
+                        <div class="text-4xl font-bold text-green-400 mb-2 mt-3" id="lastUpdate">--</div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-600 px-6 py-2 rounded-full text-white font-medium shadow-lg z-10">
+                        下期开奖
+                    </div>
+                    <div class="stat-card rounded-2xl p-6 text-center pt-8">
+                        <div class="text-2xl font-bold text-yellow-400 mb-1" id="nextDrawIssue">--</div>
+                        <div class="text-sm text-gray-400 mt-1" id="nextDrawTime"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div>
+            <!-- Data Table -->
+            <div class="bg-white/5 rounded-2xl p-6 backdrop-blur-sm overflow-x-auto">
+                <table class="w-full min-w-[600px]">
+                    <thead>
+                        <tr class="border-b border-white/20">
+                            <th class="py-4 px-2 text-left">期号</th>
+                            <th class="py-4 px-2 text-left">日期</th>
+                            <th class="py-4 px-2 text-left">开奖号码</th>
+                            <th class="py-4 px-2 text-left">一等奖注数</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTable">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Bottom Actions -->
+        <div class="mt-8 flex justify-center gap-4">
+            <button onclick="checkForUpdates()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl transition-all flex items-center gap-2">
+                <i data-lucide="refresh-cw"></i>
+                检查更新
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-gray-400">
+            <p>© 2026 大乐透查询工具. 数据仅供参考，请以官方公布为准.</p>
+            <p class="mt-2">每周一、三、六 21:25 准时开奖</p>
+        </footer>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">导出数据</h3>
+            <div class="space-y-4">
+                <button class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" onclick="exportData('csv')">
+                    导出为 CSV
+                </button>
+                <button class="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors" onclick="exportData('json')">
+                    导出为 JSON
+                </button>
+                <button class="w-full py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors" onclick="closeExportModal()">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Notification -->
+    <div id="updateNotification" class="fixed top-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg hidden items-center gap-3 z-50">
+        <i data-lucide="refresh-cw" class="animate-spin"></i>
+        <div>
+            <div class="font-bold">发现新数据</div>
+            <div class="text-sm">点击更新最新开奖信息</div>
+        </div>
+        <button onclick="checkForUpdates()" class="ml-4 px-3 py-1 bg-white text-green-600 rounded font-medium hover:bg-gray-100 transition-colors">
+            更新
+        </button>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/update-service.js"></script>
+    <script>
+        let filteredData = [];
+        let frequencyChart = null;
+
+        // Load data from localStorage if available, otherwise use the original data
+        function loadData() {
+            let data = [...lottoData]; // Start with original data
+            
+            const updatedData = localStorage.getItem('importedLottoData');
+            if (updatedData) {
+                try {
+                    const importedData = JSON.parse(updatedData);
+                    
+                    // Merge imported data with original data, removing duplicates
+                    const issueSet = new Set(data.map(item => item.issue));
+                    const newRecords = importedData.filter(item => !issueSet.has(item.issue));
+                    
+                    data = [...data, ...newRecords];
+                } catch (error) {
+                    console.error('Error parsing imported data:', error);
+                    // Clear corrupted data
+                    localStorage.removeItem('importedLottoData');
+                }
+            }
+            
+            // Remove any duplicates that might exist in the merged data
+            const uniqueData = [];
+            const uniqueIssues = new Set();
+            
+            data.forEach(item => {
+                if (!uniqueIssues.has(item.issue)) {
+                    uniqueIssues.add(item.issue);
+                    uniqueData.push(item);
+                }
+            });
+            
+            // Ensure data is sorted by issue number in descending order (newest first)
+            return uniqueData.sort((a, b) => parseInt(b.issue) - parseInt(a.issue));
+        }
+
+        // Initialize the application
+        function init() {
+            // Load all data and then take only the first 20 records (newest)
+            const allData = loadData();
+            filteredData = allData.slice(0, 20);
+            renderTable();
+            updateStats();
+            lucide.createIcons();
+            setupEventListeners();
+        }
+
+        function formatPool(poolStr) {
+            // 移除逗号并转换为数字
+            const poolNum = parseFloat(poolStr.replace(/,/g, ''));
+            // 转换为亿元并去尾
+            return (Math.floor(poolNum / 100000000 * 100) / 100).toFixed(2) + '亿';
+        }
+
+        // Render the data table
+        function renderTable() {
+            const tbody = document.getElementById('dataTable');
+            tbody.innerHTML = '';
+
+            filteredData.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.className = 'table-row border-b border-white/10 hover:bg-white/5';
+                row.innerHTML = `
+                    <td class="py-4 px-2 font-medium">
+                        <a href="https://pdf.sporttery.cn/33800/${item.issue}/${item.issue}.pdf" target="_blank" class="text-inherit hover:text-blue-500 hover:underline transition-colors">
+                            ${item.issue}
+                        </a>
+                    </td>
+                    <td class="py-4 px-2 text-gray-300">${item.date}</td>
+                    <td class="py-4 px-2">
+                        <div class="flex items-center">
+                            ${item.redBalls.map(ball => `<div class="ball red-ball" style="animation-delay: ${index * 0.05}s">${ball}</div>`).join('')}
+                            ${item.blueBalls.map(ball => `<div class="ball blue-ball" style="animation-delay: ${index * 0.05 + 0.25}s">${ball}</div>`).join('')}
+                        </div>
+                    </td>
+                    <td class="py-4 px-2 text-yellow-300">${item.firstPrize} 注</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Render the frequency chart
+        function renderChart() {
+            const ctx = document.getElementById('frequencyChart').getContext('2d');
+            
+            // Calculate frequency
+            const frequency = calculateFrequency();
+            
+            if (frequencyChart) {
+                frequencyChart.destroy();
+            }
+
+            frequencyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: frequency.labels,
+                    datasets: [{
+                        label: '出现次数',
+                        data: frequency.data,
+                        backgroundColor: frequency.colors,
+                        borderColor: frequency.borderColors,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255,255,255,0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255,255,255,0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(255,255,255,0.7)',
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Calculate number frequency
+        function calculateFrequency() {
+            const counts = {};
+            const colors = [];
+            const borderColors = [];
+
+            // Count red balls
+            for (let i = 1; i <= 35; i++) {
+                const num = i.toString().padStart(2, '0');
+                counts[num] = { count: 0, type: 'red' };
+            }
+
+            // Count blue balls
+            for (let i = 1; i <= 12; i++) {
+                const num = i.toString().padStart(2, '0');
+                counts[num] = { count: 0, type: 'blue' };
+            }
+
+            // Count occurrences
+            filteredData.forEach(item => {
+                item.redBalls.forEach(ball => {
+                    counts[ball].count++;
+                });
+                item.blueBalls.forEach(ball => {
+                    counts[ball].count++;
+                });
+            });
+
+            // Filter and sort
+            const filtered = Object.entries(counts)
+                .filter(([_, data]) => data.count > 0)
+                .sort((a, b) => b[1].count - a[1].count)
+                .slice(0, 15);
+
+            const labels = filtered.map(([num]) => num);
+            const data = filtered.map(([_, data]) => data.count);
+
+            filtered.forEach(([_, data]) => {
+                if (data.type === 'red') {
+                    colors.push('rgba(231, 76, 60, 0.8)');
+                    borderColors.push('rgba(231, 76, 60, 1)');
+                } else {
+                    colors.push('rgba(52, 152, 219, 0.8)');
+                    borderColors.push('rgba(52, 152, 219, 1)');
+                }
+            });
+
+            return { labels, data, colors, borderColors };
+        }
+
+        // Update statistics
+        function updateStats() {
+            const currentPool = formatPool(filteredData[0]?.pool || '0');
+            document.getElementById('currentPool').textContent = `¥${currentPool}`;
+
+            const lastUpdateDate = new Date(filteredData[0]?.date || '');
+            const month = String(lastUpdateDate.getMonth() + 1).padStart(2, '0');
+            const day = String(lastUpdateDate.getDate()).padStart(2, '0');
+            const formattedDate = `${month}-${day}`;
+            document.getElementById('lastUpdate').textContent = formattedDate;
+            
+            // 更新下期开奖信息
+            updateNextDrawInfo();
+        }
+
+        // Update next draw information
+        function updateNextDrawInfo() {
+            const lastIssue = filteredData[0]?.issue;
+            if (!lastIssue) {
+                document.getElementById('nextDrawIssue').textContent = '暂无数据';
+                document.getElementById('nextDrawTime').textContent = '';
+                document.getElementById('daysUntilDraw').textContent = '';
+                return;
+            }
+
+            // 计算下期期号
+            const nextIssue = (parseInt(lastIssue) + 1).toString().padStart(5, '0');
+            document.getElementById('nextDrawIssue').textContent = nextIssue;
+
+            // 计算下期开奖时间（大乐透每周一、三、六开奖）
+            const lastDrawDate = new Date(filteredData[0].date);
+            const nextDrawDate = getNextDrawDate(lastDrawDate);
+            
+            const options = { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+            const timeStr = nextDrawDate.toLocaleDateString('zh-CN', options).replace(/\//g, '-');
+            const weekday = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][nextDrawDate.getDay()];
+            
+            document.getElementById('nextDrawTime').textContent = `${timeStr} ${weekday}`;
+        }
+
+        // Get next draw date (大乐透：周一、三、六开奖)
+        function getNextDrawDate(lastDrawDate) {
+            const nextDate = new Date(lastDrawDate);
+            nextDate.setDate(nextDate.getDate() + 1); // 从下一天开始查找
+            
+            // 大乐透开奖日：1(周一)、3(周三)、6(周六)
+            const drawDays = [1, 3, 6];
+            
+            while (!drawDays.includes(nextDate.getDay())) {
+                nextDate.setDate(nextDate.getDate() + 1);
+            }
+            
+            // 设置开奖时间为21:25
+            nextDate.setHours(21, 25, 0, 0);
+            
+            return nextDate;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search functionality - 完全重写的搜索逻辑
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                const allData = loadData(); // Get complete merged data
+                
+                console.log(`🔍 搜索: "${searchTerm}"`);
+                
+                if (searchTerm === '') {
+                    // If search is empty, show only the first 20 records (newest)
+                    filteredData = allData.slice(0, 20);
+                } else {
+                    // 1. 优先精确匹配完整期号
+                    const exactMatches = allData.filter(item => item.issue === searchTerm);
+                    if (exactMatches.length > 0) {
+                        console.log('找到精确匹配');
+                        filteredData = exactMatches;
+                    } else {
+                        // 2. 如果搜索的是数字
+                        if (/^\d+$/.test(searchTerm)) {
+                            console.log('数字搜索，长度:', searchTerm.length);
+                            
+                            // 3. 短数字搜索（1-4位）
+                            if (searchTerm.length <= 4) {
+                                // 对于"026"这样的搜索，只匹配期号最后几位
+                                const expectedLength = searchTerm.length;
+                                const results = allData.filter(item => {
+                                    const issueEnd = item.issue.slice(-expectedLength);
+                                    const matches = issueEnd === searchTerm;
+                                    console.log(`期号 ${item.issue} 最后${expectedLength}位: ${issueEnd}, 匹配: ${matches}`);
+                                    return matches;
+                                });
+                                
+                                if (results.length > 0) {
+                                    console.log('找到末尾匹配:', results.map(r => r.issue));
+                                    filteredData = results;
+                                } else {
+                                    // 如果没有末尾匹配，回退到包含匹配
+                                    console.log('无末尾匹配，回退到包含匹配');
+                                    filteredData = allData.filter(item => 
+                                        item.issue.includes(searchTerm) || 
+                                        item.date.includes(searchTerm)
+                                    ).slice(0, 20);
+                                }
+                            } else {
+                                // 长数字搜索，使用包含匹配
+                                console.log('长数字搜索');
+                                filteredData = allData.filter(item => 
+                                    item.issue.includes(searchTerm) ||
+                                    item.date.includes(searchTerm)
+                                ).slice(0, 20);
+                            }
+                        } else {
+                            // 非数字搜索，使用包含匹配
+                            console.log('非数字搜索');
+                            filteredData = allData.filter(item => 
+                                item.issue.includes(searchTerm) || 
+                                item.date.includes(searchTerm)
+                            ).slice(0, 20);
+                        }
+                    }
+                }
+                
+                console.log('最终结果数量:', filteredData.length);
+                console.log('最终匹配期号:', filteredData.map(r => r.issue));
+                
+                renderTable();
+                updateStats();
+            });
+
+            // More data button
+            document.getElementById('moreDataBtn').addEventListener('click', () => {
+                window.location.href = 'more-data.html';
+            });
+
+            // cleanupBtn 已从页面移除，不再绑定
+
+            // Frequency button
+            document.getElementById('frequencyBtn').addEventListener('click', () => {
+                window.location.href = 'frequency.html';
+            });
+        }
+
+        // Export data function
+        function exportData(format) {
+            if (format === 'csv') {
+                const csvContent = convertToCSV(filteredData);
+                downloadFile(csvContent, 'lotto_data.csv', 'text/csv');
+            } else if (format === 'json') {
+                const jsonContent = JSON.stringify(filteredData, null, 2);
+                downloadFile(jsonContent, 'lotto_data.json', 'application/json');
+            }
+            closeExportModal();
+        }
+
+        // Convert data to CSV
+        function convertToCSV(data) {
+            const headers = ['期号', '日期', '红球1', '红球2', '红球3', '红球4', '红球5', '蓝球1', '蓝球2', '销售额', '奖池'];
+            const rows = data.map(item => [
+                item.issue,
+                item.date,
+                ...item.redBalls,
+                ...item.blueBalls,
+                item.sales,
+                item.pool
+            ]);
+            return [headers, ...rows].map(row => row.join(',')).join('\n');
+        }
+
+        // Download file
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Close export modal
+        function closeExportModal() {
+            document.getElementById('exportModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('exportModal').addEventListener('click', (e) => {
+            if (e.target.id === 'exportModal') {
+                closeExportModal();
+            }
+        });
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+            
+            // 初始化自动更新调度器
+            if (typeof AutoUpdateScheduler !== 'undefined') {
+                console.log('启动自动更新调度器...');
+                AutoUpdateScheduler.init();
+            } else {
+                console.error('自动更新调度器未定义，检查 update-service.js 是否正确加载。');
+            }
+        });
+
+        // 为了方便在控制台或其他地方手动调用，将关键函数挂载到 window 对象上
+        window.checkForUpdates = checkForUpdates;
+        window.applyUpdate = applyUpdate;
+        window.AutoUpdateScheduler = AutoUpdateScheduler;
+        window.UPDATE_SERVICE = UPDATE_SERVICE;
+    </script>
+
+</body></html>
